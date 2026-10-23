@@ -1,0 +1,535 @@
+{
+  "name": "AI Listing Builder - Coderhouse",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3fd663e6-771a-4bf0-bd7e-dc33037b5865",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7b2584f-dc98-407a-bd82-65f7c940f1f7",
+              "name": "nombre_producto",
+              "value": "Soporte magnético para celular de auto",
+              "type": "string"
+            },
+            {
+              "id": "3dc0f060-4715-4040-9229-dbf001d16709",
+              "name": "sku",
+              "value": "SOP-AUTO-001",
+              "type": "string"
+            },
+            {
+              "id": "96e39bf1-003b-4590-8240-c4c2ba158df5",
+              "name": "precio",
+              "value": 12500,
+              "type": "number"
+            },
+            {
+              "id": "9f2aca1f-7860-4022-879c-23efa8d746e5",
+              "name": "caracteristicas",
+              "value": "Soporte magnético, rotación 360 grados, instalación en rejilla de ventilación",
+              "type": "string"
+            },
+            {
+              "id": "616de725-5aca-4292-9fd0-189684eff658",
+              "name": "publico_objetivo",
+              "value": "Conductores que utilizan el celular como GPS",
+              "type": "string"
+            },
+            {
+              "id": "86fae5a5-cd7e-428a-9f28-c9956fe05e42",
+              "name": "estado",
+              "value": "Pendiente",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b6daac9a-af32-40d0-8677-ebd979b4d9df",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": "https://airtable.com/app5mOoXRKRTlhO6D"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "list",
+          "cachedResultName": "Productos",
+          "cachedResultUrl": "https://airtable.com/app5mOoXRKRTlhO6D/tblc3eYtmw48pImWA"
+        },
+        "filterByFormula": "{Estado del producto} = \"Pendiente\"",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4d5744a6-5618-4ff4-aed0-b9d79e41fb6b",
+      "name": "Search records",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "n0RfaBWG19bQtTNX",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI",
+          "cachedResultUrl": ""
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Actuá como especialista en copywriting para comercio electrónico en Argentina. Generá una publicación comercial clara, persuasiva y honesta usando exclusivamente los datos del producto que aparecen abajo. No inventes especificaciones, materiales, compatibilidades, garantías ni beneficios que no estén respaldados por los datos. Escribí en español argentino, con tono profesional.\\n\\nNombre: {{ $json.fields[\"Nombre del producto\"] }}\\nSKU: {{ $json.fields[\"SKU\"] }}\\nPrecio: {{ $json.fields[\"Precio\"] }}\\nCaracterísticas: {{ $json.fields[\"Características\"] }}\\nPúblico objetivo: {{ $json.fields[\"Público objetivo\"] }}\\n\\nDevolvé exactamente estas cuatro secciones:\\nTITULO: título comercial de hasta 70 caracteres.\\nDESCRIPCION: descripción comercial clara, de 80 a 150 palabras.\\nBENEFICIOS: tres beneficios respaldados por las características, separados por punto y coma.\\nPALABRAS_CLAVE: entre cinco y ocho palabras clave relevantes, separadas por comas.\\n\\nNo agregues información fuera de esas cuatro secciones."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 500
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "796f9474-e81d-4667-9906-79a8f353e99e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\n\nreturn items.map(item => {\n  const texto = item.json.output?.[0]?.content?.[0]?.text ?? '';\n\n  function extraer(seccion, siguiente) {\n    const inicio = texto.indexOf(seccion + ':');\n    if (inicio === -1) return '';\n\n    const desde = inicio + seccion.length + 1;\n    const fin = siguiente\n      ? texto.indexOf(siguiente + ':', desde)\n      : texto.length;\n\n    return texto\n      .slice(desde, fin === -1 ? texto.length : fin)\n      .replace(/\\*\\*/g, '')\n      .trim();\n  }\n\n  return {\n    json: {\n      titulo_generado: extraer('TITULO', 'DESCRIPCION'),\n      descripcion_comercial: extraer('DESCRIPCION', 'BENEFICIOS'),\n      beneficios: extraer('BENEFICIOS', 'PALABRAS_CLAVE'),\n      palabras_clave: extraer('PALABRAS_CLAVE'),\n      sku: $('Search records').first().json.fields.SKU,\n      nombre_producto: $('Search records').first().json.fields['Nombre del producto'],\n      estado_aprobacion: 'Pendiente de aprobación'\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "56a9c21b-fcd8-4db3-a4ac-b754b811848a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": "https://airtable.com/app5mOoXRKRTlhO6D"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "list",
+          "cachedResultName": "Productos",
+          "cachedResultUrl": "https://airtable.com/app5mOoXRKRTlhO6D/tblc3eYtmw48pImWA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').first().json.id }}",
+            "Nombre del producto": "={{ $('Edit Fields').first().json.nombre_producto }}",
+            "SKU": "={{ $('Edit Fields').first().json.sku }}",
+            "Precio": "={{ $('Edit Fields').first().json.precio }}",
+            "Características": "={{ $('Edit Fields').first().json.caracteristicas }}",
+            "Público objetivo": "={{ $('Edit Fields').first().json.publico_objetivo }}",
+            "Estado del producto": "Pendiente de aprobación",
+            "Palabras clave": "={{ $('Code in JavaScript').first().json.palabras_clave }}",
+            "Beneficios": "={{ $('Code in JavaScript').first().json.beneficios }}",
+            "Descripcion comercial": "={{ $('Code in JavaScript').first().json.descripcion_comercial }}",
+            "Título generado": "={{ $('Code in JavaScript').first().json.titulo_generado }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre del producto",
+              "displayName": "Nombre del producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Precio",
+              "displayName": "Precio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Características",
+              "displayName": "Características",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Público objetivo",
+              "displayName": "Público objetivo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado del producto",
+              "displayName": "Estado del producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Pendiente de aprobación",
+                  "value": "Pendiente de aprobación"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                },
+                {
+                  "name": "Enviado",
+                  "value": "Enviado"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publicaciones IA",
+              "displayName": "Publicaciones IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de creación",
+              "displayName": "Fecha de creación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripcion comercial",
+              "displayName": "Descripcion comercial",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Beneficios",
+              "displayName": "Beneficios",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Palabras clave",
+              "displayName": "Palabras clave",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "b037ca2d-bc2c-4b30-bc34-c0793744964f",
+      "name": "Update record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "n0RfaBWG19bQtTNX",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2c4ad67e-8276-4c20-94f3-7e86d1bc45b6",
+              "leftValue": "={{ $json.fields[\"Estado del producto\"] }}",
+              "rightValue": "Pendiente",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "9675ea16-f97c-45ae-a523-158dd5e6827b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "soack.pro@gmail.com",
+        "subject": "=Producto pendiente de aprobación: {{ $json.fields[\"Nombre del producto\"] }}",
+        "message": "=Se generó contenido comercial con IA y está listo para revisión humana.  Producto: {{ $json.fields[\"Nombre del producto\"] }} SKU: {{ $json.fields[\"SKU\"] }} Título propuesto: {{ $json.fields[\"Título generado\"] }} Descripción: {{ $json.fields[\"Descripcion comercial\"] }} Beneficios: {{ $json.fields[\"Beneficios\"] }} Palabras clave: {{ $json.fields[\"Palabras clave\"] }}  Revisá el registro en Airtable y cambiá el estado a Aprobado o Rechazado según corresponda. No publiques el contenido sin revisarlo.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "cda6cf22-2098-42a9-93ef-c145da1e57ec",
+      "name": "Send a message",
+      "webhookId": "d11366bc-7949-41d7-9dd5-26ab8a6414a3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Uy3afmJz3HTUhix2",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c90e3ea9-1ac7-40df-95ce-4586ccd5a7f9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9d63250506974f2da1dea499b87abd935614d6713916ac661bde740170d72eca"
+  },
+  "nodeGroups": [],
+  "id": "Iwn9iSs6PwonZbtv",
+  "tags": []
+}
