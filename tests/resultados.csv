@@ -1,0 +1,16 @@
+Caso,Ejecución n8n,Entrada,Resultado observado,Estado
+TC01,55,Producto completo moto,Borrador y publicación relacionada guardados; correo omitido en prueba,Verificado
+TC02,56,Producto completo auto,Borrador y publicación relacionada guardados; correo omitido en prueba,Verificado
+TC03,57,Características ausentes,Registro de error relacionado y producto en Error,Verificado
+TC04,58,Estado no Pendiente,Rama false; sin generación ni actualización,Verificado
+TC05,59,Modelo inexistente para provocar fallo API,Salida de error OpenAI; fallo registrado y producto en Error,Verificado
+TC06,61,Aprobación simulada en producto QA,Resultado de revisión: Listo para publicar; auditoría relacionada,Verificado
+TC07,62,Rechazo simulado en producto QA,Rechazo registrado y auditoría relacionada,Verificado
+TC08,63 y 64,Repetición de decisiones procesadas,Rama Ignorar otros estados; sin nueva acción de revisión,Verificado
+TC09,68,Un producto QA completo; correo autorizado,Gmail aceptó solicitud; Message ID y Thread ID guardados en Airtable; 8.544 s,Verificado
+TC10,70,Aprobación simulada del producto QA de correo,Gmail aceptó respuesta en el mismo Thread ID; 2.339 s,Verificado
+TC11,71,Nuevo registro QA-AUTO-20261030 puesto en Pendiente desde Airtable,Trigger automático de producción; borrador relacionado; correo omitido; 6.149 s,Verificado
+TC12,72,Respuesta Gmail con hilo inexistente,Error API real y registro relacionado en Airtable; ningún correo nuevo,Verificado
+TC13,73,Estado Rechazado en QA-AUTO-20261030,Trigger automático de revisión; rechazo registrado; 3.182 s,Verificado
+TC14,76,Decisión humana de rechazo de QA-MVUIEOO0-TC01 aplicada en Airtable,Estado Rechazado y auditoría automática vinculada; sin publicación,Verificado
+TC15,78,Producto QA-FINAL-AUTO-20261030 creado en Airtable y puesto en Pendiente,"Trigger automático, IA, borrador relacionado y correo de revisión aceptado por Gmail; 8.615 s",Verificado

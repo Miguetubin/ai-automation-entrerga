@@ -1,0 +1,207 @@
+{
+  "name": "AI Listing Builder - Test de estrés",
+  "nodes": [
+    {
+      "id": "2328c2f9-6410-4aba-90b0-206715e07775",
+      "name": "Ejecutar cinco pruebas",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "parameters": {},
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "0277ae97-c3ad-4212-9719-8324b241600b",
+      "name": "Casos de prueba",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const run=Date.now().toString(36).toUpperCase();\nconst cases=[\n {caso:'TC01',nombre:'PRUEBA Soporte de celular para moto',caracteristicas:'Soporte ajustable, fijación al manubrio, rotación de 360 grados'},\n {caso:'TC02',nombre:'PRUEBA Soporte de celular para auto',caracteristicas:'Soporte magnético, fijación a rejilla, rotación de 360 grados'},\n {caso:'TC03',nombre:'PRUEBA Datos incompletos',caracteristicas:''},\n {caso:'TC04',nombre:'PRUEBA Producto fuera de Pendiente',caracteristicas:'Soporte ajustable',estado:'Pendiente de aprobación'},\n {caso:'TC05',nombre:'PRUEBA Fallo controlado de OpenAI',caracteristicas:'Soporte ajustable, fijación al manubrio',fault:true}\n];\nreturn cases.map(c=>({json:{...c,sku:`QA-${run}-${c.caso}`,precio:15000,publico:'Conductores que utilizan el celular como GPS',estado:c.estado??'Pendiente'}}));"
+      },
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "id": "eb6187ae-679b-4702-afea-b76017a124dd",
+      "name": "Crear productos de prueba",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "list",
+          "cachedResultName": "Productos",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre del producto": "={{ $json.nombre }}",
+            "SKU": "={{ $json.sku }}",
+            "Precio": "={{ $json.precio }}",
+            "Características": "={{ $json.caracteristicas }}",
+            "Público objetivo": "={{ $json.publico }}",
+            "Estado del producto": "={{ $json.estado }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre del producto",
+              "displayName": "Nombre del producto",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            },
+            {
+              "id": "Precio",
+              "displayName": "Precio",
+              "type": "number",
+              "required": false,
+              "display": true,
+              "removed": false
+            },
+            {
+              "id": "Características",
+              "displayName": "Características",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            },
+            {
+              "id": "Público objetivo",
+              "displayName": "Público objetivo",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            },
+            {
+              "id": "Estado del producto",
+              "displayName": "Estado del producto",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "id": "1058d84f-df66-4b79-a96c-73f3f49c768e",
+      "name": "Preparar casos creados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "return $input.all().map((i,index)=>({json:{...i.json,_prueba_api_fallida:$('Casos de prueba').all()[index].json.fault===true,caso_prueba:$('Casos de prueba').all()[index].json.caso},pairedItem:{item:index}}));"
+      },
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "id": "239a16ae-04b8-43b8-9143-5c8b43565596",
+      "name": "Ejecutar generación por caso",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "odSBCkyEjTUPTLrJ",
+          "mode": "id"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Ejecutar cinco pruebas": {
+      "main": [
+        [
+          {
+            "node": "Casos de prueba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Casos de prueba": {
+      "main": [
+        [
+          {
+            "node": "Crear productos de prueba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear productos de prueba": {
+      "main": [
+        [
+          {
+            "node": "Preparar casos creados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar casos creados": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar generación por caso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

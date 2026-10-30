@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Salida normalizada de IA",
+  "type": "object",
+  "required": [
+    "titulo_generado",
+    "descripcion_comercial",
+    "beneficios",
+    "palabras_clave"
+  ],
+  "properties": {
+    "titulo_generado": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 70
+    },
+    "descripcion_comercial": {
+      "type": "string",
+      "minLength": 1
+    },
+    "beneficios": {
+      "type": "string",
+      "minLength": 1
+    },
+    "palabras_clave": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

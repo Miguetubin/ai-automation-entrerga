@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Producto de entrada",
+  "type": "object",
+  "required": [
+    "id",
+    "fields"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^rec[a-zA-Z0-9]+$"
+    },
+    "fields": {
+      "type": "object",
+      "required": [
+        "Nombre del producto",
+        "SKU",
+        "Precio",
+        "Características",
+        "Público objetivo",
+        "Estado del producto"
+      ],
+      "properties": {
+        "Nombre del producto": {
+          "type": "string",
+          "minLength": 1
+        },
+        "SKU": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Precio": {
+          "type": "number",
+          "minimum": 0
+        },
+        "Características": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Público objetivo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Estado del producto": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

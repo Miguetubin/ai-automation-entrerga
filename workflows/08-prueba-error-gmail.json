@@ -1,0 +1,258 @@
+{
+  "name": "AI Listing Builder - Prueba error Gmail sin envío",
+  "nodes": [
+    {
+      "id": "474d252c-4c82-4a30-9a30-1ce8c880e5b8",
+      "name": "Probar fallo Gmail sin enviar correo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "parameters": {},
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "id"
+        },
+        "filterByFormula": "RECORD_ID()='recXJZoMCuBX1I0Ck'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "a8a65948-ebab-40bf-aa61-7fe60005edb9",
+      "name": "Leer productos QA"
+    },
+    {
+      "id": "d332ca89-0143-4792-b1c4-492816d30be5",
+      "name": "Contexto de decisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "return $input.all().map((item,index)=>({json:{...item.json,modo_prueba:true},pairedItem:{item:index}}));"
+      },
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "id": "8bbdc31b-5fd7-47cd-bf70-19f152dbe402",
+      "name": "Hilo inexistente de prueba",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "return $input.all().map((i,index)=>({json:{threadId:'fffffffffffffffe',messageId:'fffffffffffffffe'},pairedItem:{item:index}}));"
+      },
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "reply",
+        "threadId": "={{ $json.threadId }}",
+        "messageId": "={{ $json.messageId }}",
+        "emailType": "text",
+        "message": "=La revisión humana aprobó el producto {{ $('Contexto de decisión').item.json.fields['Nombre del producto'] }} (SKU {{ $('Contexto de decisión').item.json.fields.SKU }}). Ya se marcó como listo para publicar. No se publicó automáticamente.",
+        "options": {
+          "replyToSenderOnly": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "3e18a428-eb8d-4b62-8ebe-8f6e3a5f0607",
+      "name": "Send a message",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "c513cbfb-0ecd-4ee0-856a-a9ad40d3bcf3",
+      "name": "Error de notificación de decisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "return $input.all().map((i,index)=>({json:{...i.json,producto_id:$('Contexto de decisión').itemMatching(index).json.id,detalle:String(i.json.error?.message??i.json.error??'Error Gmail').slice(0,500)},pairedItem:{item:index}}));"
+      },
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "id": "048c5dd9-ad03-437d-9602-af3b3c447238",
+      "name": "Auditar fallo de notificación",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJM3sDu3PCpejgK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Título generado": "ERROR notificación de decisión",
+            "Producto": "={{ [$json.producto_id] }}",
+            "Registro de errores": "={{ JSON.stringify({etapa:\"gmail_decision\",detalle:$json.detalle,execution_id:$execution.id}) }}",
+            "Fecha de generación": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "type": "array",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Registro de errores",
+              "displayName": "Registro de errores",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de generación",
+              "displayName": "Fecha de generación",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "position": [
+        1440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Probar fallo Gmail sin enviar correo": {
+      "main": [
+        [
+          {
+            "node": "Leer productos QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer productos QA": {
+      "main": [
+        [
+          {
+            "node": "Contexto de decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto de decisión": {
+      "main": [
+        [
+          {
+            "node": "Hilo inexistente de prueba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hilo inexistente de prueba": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error de notificación de decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error de notificación de decisión": {
+      "main": [
+        [
+          {
+            "node": "Auditar fallo de notificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

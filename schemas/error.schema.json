@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Registro de fallo",
+  "type": "object",
+  "required": [
+    "etapa",
+    "detalle",
+    "execution_id"
+  ],
+  "properties": {
+    "etapa": {
+      "type": "string"
+    },
+    "detalle": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "execution_id": {
+      "type": "string"
+    }
+  }
+}

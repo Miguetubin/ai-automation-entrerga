@@ -1,0 +1,1069 @@
+{
+  "name": "AI Listing Builder - Final - Aprobación",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "id"
+        },
+        "triggerField": "Última modificación",
+        "additionalFields": {
+          "formula": "AND(OR({Estado del producto}=\"Aprobado\",{Estado del producto}=\"Rechazado\"),{Resultado de revisión}=BLANK())"
+        }
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7a7ed03b-862b-4a58-a034-d1e26349460e",
+      "name": "Cambios de aprobación"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((item,index)=>({json:{...item.json,modo_prueba:false},pairedItem:{item:index}}));"
+      },
+      "id": "5c48f4f3-c684-4f26-8261-11a5df04f257",
+      "name": "Contexto de decisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "list",
+          "cachedResultName": "Productos",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Resultado de revisión": "Rechazo registrado; corregir antes de volver a Pendiente."
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "type": "string",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Resultado de revisión",
+              "displayName": "Resultado de revisión",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "15a4a1ef-6eea-4d46-971b-4e1a00b52696",
+      "name": "Registrar rechazo del producto",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJM3sDu3PCpejgK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Título generado": "=Aprobado: {{ $json.fields[\"Título generado\"] || $json.fields[\"Nombre del producto\"] }}",
+            "Producto": "={{ [$json.id] }}",
+            "Fecha de generación": "={{ $now.toISO() }}",
+            "Resultado del envío": "=Aprobado. Decisión humana registrada en ejecución {{ $execution.id }}. No se publicó en marketplaces."
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "type": "array",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de generación",
+              "displayName": "Fecha de generación",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado del envío",
+              "displayName": "Resultado del envío",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6b160802-539e-4da7-8e17-d06f2c1464f5",
+      "name": "Auditar aprobación humana",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJM3sDu3PCpejgK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Título generado": "=Rechazado: {{ $json.fields[\"Título generado\"] || $json.fields[\"Nombre del producto\"] }}",
+            "Producto": "={{ [$json.id] }}",
+            "Fecha de generación": "={{ $now.toISO() }}",
+            "Resultado del envío": "=Rechazado. Decisión humana registrada en ejecución {{ $execution.id }}. No se publicó en marketplaces."
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "type": "array",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de generación",
+              "displayName": "Fecha de generación",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado del envío",
+              "displayName": "Resultado del envío",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e5b10cdd-83f7-4d14-94de-13da8b316b6b",
+      "name": "Auditar rechazo humano",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        304
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "cc0117f6-9386-4b0e-86a6-a615e556f5f8",
+      "name": "Ignorar otros estados",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2e83fc2d-a168-40ba-bb7c-72062ab9770e",
+              "leftValue": "={{ String($('Contexto de decisión').item.json.modo_prueba) }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e93895a1-9c7c-4fa7-95bb-6aeead88be12",
+      "name": "Notificación de decisión habilitada",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1104,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "9e3e5fc4-2cd8-4c83-b88b-fc064d26d948",
+      "name": "Decisión registrada sin correo de prueba",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((i,index)=>({json:{...i.json,producto_id:$('Contexto de decisión').itemMatching(index).json.id,detalle:String(i.json.error?.message??i.json.error??'Error Gmail').slice(0,500)},pairedItem:{item:index}}));"
+      },
+      "id": "8f087f3c-7025-48b3-a65a-f13350e2e668",
+      "name": "Error de notificación de decisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJM3sDu3PCpejgK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Título generado": "ERROR notificación de decisión",
+            "Producto": "={{ [$json.producto_id] }}",
+            "Registro de errores": "={{ JSON.stringify({etapa:\"gmail_decision\",detalle:$json.detalle,execution_id:$execution.id}) }}",
+            "Fecha de generación": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "type": "array",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Registro de errores",
+              "displayName": "Registro de errores",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de generación",
+              "displayName": "Fecha de generación",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f660c9df-8f49-4296-98f9-70b35f9776a2",
+      "name": "Auditar fallo de notificación",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "65fb7519-280d-4af1-bb76-3e4abd8d713b",
+      "name": "Entrada de pruebas de decisión",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "3ba2e447-3957-4ffa-9f3c-09eb39069c66",
+              "leftValue": "={{ String(($('Contexto de decisión').item.json.fields['Publicaciones IA'] || []).length > 0) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "36851cb0-00d9-4afa-9b6e-86049f5b6fd3",
+      "name": "Existe publicación de origen",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1328,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJM3sDu3PCpejgK",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ \"RECORD_ID()='\" + ($('Contexto de decisión').item.json.fields['Publicaciones IA'] || []).slice(-1)[0] + \"'\" }}",
+        "options": {}
+      },
+      "id": "d482d4c9-45f6-4c27-a812-ea63a2120d95",
+      "name": "Buscar revisión original",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((i,index)=>{let meta={};try{meta=JSON.parse(i.json.fields?.['Resultado del envío']||'{}');}catch{}return {json:{messageId:meta.messageId||'',threadId:meta.threadId||'',hilo_completo:meta.messageId&&meta.threadId?'si':'no'},pairedItem:{item:index}};});"
+      },
+      "id": "d2959499-5b87-49a2-84f8-b3567f969d16",
+      "name": "Recuperar hilo de revisión",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "5cf1596f-c0df-45d6-a2ba-562347934ada",
+              "leftValue": "={{ $json.hilo_completo }}",
+              "rightValue": "si",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5957f3b5-18ab-4664-8288-49539a0138e2",
+      "name": "Hilo original disponible",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        1984,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "d743cb1c-c825-4552-960a-06cd1a46101c",
+              "leftValue": "={{ $json.fields[\"Resultado de revisión\"] ? \"Decisión ya procesada\" : $json.fields[\"Estado del producto\"] }}",
+              "rightValue": "Aprobado",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "1b10a193-d1a7-4f9e-bde8-51666dbf2d4f",
+      "name": "Decisión aprobada sin procesar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "602e7e92-f569-4ddd-95e0-b1ebb183900a",
+              "leftValue": "={{ $json.fields[\"Resultado de revisión\"] ? \"Decisión ya procesada\" : $json.fields[\"Estado del producto\"] }}",
+              "rightValue": "Rechazado",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        304
+      ],
+      "id": "6960d1ed-60c4-4939-9de2-2bb8854c6425",
+      "name": "Decisión rechazada sin procesar"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "list",
+          "cachedResultName": "Productos",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Resultado de revisión": "Listo para publicar"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre del producto",
+              "displayName": "Nombre del producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Precio",
+              "displayName": "Precio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Características",
+              "displayName": "Características",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Público objetivo",
+              "displayName": "Público objetivo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado del producto",
+              "displayName": "Estado del producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Pendiente de aprobación",
+                  "value": "Pendiente de aprobación"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                },
+                {
+                  "name": "Enviado",
+                  "value": "Enviado"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                },
+                {
+                  "name": "Motociclistas que usan el celular como GPS",
+                  "value": "Motociclistas que usan el celular como GPS"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publicaciones IA",
+              "displayName": "Publicaciones IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de creación",
+              "displayName": "Fecha de creación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripcion comercial",
+              "displayName": "Descripcion comercial",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Beneficios",
+              "displayName": "Beneficios",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Palabras clave",
+              "displayName": "Palabras clave",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado de revisión",
+              "displayName": "Resultado de revisión",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "7d3009d2-b709-4c07-b606-ecc2ff293a63",
+      "name": "Marcar listo para publicar"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "reply",
+        "threadId": "={{ $json.threadId }}",
+        "messageId": "={{ $json.messageId }}",
+        "message": "=La revisión humana aprobó el producto {{ $('Contexto de decisión').item.json.fields['Nombre del producto'] }} (SKU {{ $('Contexto de decisión').item.json.fields.SKU }}). Ya se marcó como listo para publicar. No se publicó automáticamente.",
+        "options": {
+          "replyToSenderOnly": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2208,
+        0
+      ],
+      "id": "ed480607-a4dd-404f-8df5-6944b1065abe",
+      "name": "Responder aprobación en hilo Gmail",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cambios de aprobación": {
+      "main": [
+        [
+          {
+            "node": "Contexto de decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada de pruebas de decisión": {
+      "main": [
+        [
+          {
+            "node": "Contexto de decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto de decisión": {
+      "main": [
+        [
+          {
+            "node": "Decisión aprobada sin procesar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auditar aprobación humana": {
+      "main": [
+        [
+          {
+            "node": "Notificación de decisión habilitada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificación de decisión habilitada": {
+      "main": [
+        [
+          {
+            "node": "Existe publicación de origen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decisión registrada sin correo de prueba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar rechazo del producto": {
+      "main": [
+        [
+          {
+            "node": "Auditar rechazo humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error de notificación de decisión": {
+      "main": [
+        [
+          {
+            "node": "Auditar fallo de notificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existe publicación de origen": {
+      "main": [
+        [
+          {
+            "node": "Buscar revisión original",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decisión registrada sin correo de prueba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar revisión original": {
+      "main": [
+        [
+          {
+            "node": "Recuperar hilo de revisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recuperar hilo de revisión": {
+      "main": [
+        [
+          {
+            "node": "Hilo original disponible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hilo original disponible": {
+      "main": [
+        [
+          {
+            "node": "Responder aprobación en hilo Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decisión registrada sin correo de prueba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decisión aprobada sin procesar": {
+      "main": [
+        [
+          {
+            "node": "Marcar listo para publicar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decisión rechazada sin procesar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decisión rechazada sin procesar": {
+      "main": [
+        [
+          {
+            "node": "Registrar rechazo del producto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ignorar otros estados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar listo para publicar": {
+      "main": [
+        [
+          {
+            "node": "Auditar aprobación humana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder aprobación en hilo Gmail": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error de notificación de decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}

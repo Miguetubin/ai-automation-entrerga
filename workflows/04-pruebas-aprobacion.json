@@ -1,0 +1,424 @@
+{
+  "name": "AI Listing Builder - Pruebas de aprobación",
+  "nodes": [
+    {
+      "id": "0b8396c2-9dc0-4833-b94f-fa67176d6e4d",
+      "name": "Probar aprobación y rechazo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "parameters": {},
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "id"
+        },
+        "filterByFormula": "LEFT({SKU},3)='QA-'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "2f11b674-f275-40b8-98be-734bbbf44021",
+      "name": "Leer productos QA"
+    },
+    {
+      "id": "20ad281c-3c79-46d9-be4c-719d8670f163",
+      "name": "Elegir dos productos QA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const data=$input.all().map(i=>i.json).filter(p=>p.fields?.SKU?.startsWith('QA-')&&p.fields?.['Estado del producto']==='Pendiente de aprobación'&&p.fields?.['Título generado']);data.sort((a,b)=>b.createdTime.localeCompare(a.createdTime));const a=data.find(p=>p.fields.SKU.endsWith('TC01'));const b=data.find(p=>p.fields.SKU.endsWith('TC02'));if(!a||!b)throw new Error('Faltan productos QA generados para probar decisiones');return [a,b].map((p,i)=>({json:{...p,decision_prueba:i?'Rechazado':'Aprobado'}}));"
+      },
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "list",
+          "cachedResultName": "Productos",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Estado del producto": "={{ $json.decision_prueba }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre del producto",
+              "displayName": "Nombre del producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Precio",
+              "displayName": "Precio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Características",
+              "displayName": "Características",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Público objetivo",
+              "displayName": "Público objetivo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado del producto",
+              "displayName": "Estado del producto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Pendiente de aprobación",
+                  "value": "Pendiente de aprobación"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                },
+                {
+                  "name": "Enviado",
+                  "value": "Enviado"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publicaciones IA",
+              "displayName": "Publicaciones IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de creación",
+              "displayName": "Fecha de creación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Título generado",
+              "displayName": "Título generado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripcion comercial",
+              "displayName": "Descripcion comercial",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Beneficios",
+              "displayName": "Beneficios",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Palabras clave",
+              "displayName": "Palabras clave",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado de revisión",
+              "displayName": "Resultado de revisión",
+              "type": "string",
+              "required": false,
+              "display": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "543507e9-78d2-4b7c-8096-862785694261",
+      "name": "Simular decisión en productos QA"
+    },
+    {
+      "id": "49a794d6-aaef-4f8b-b6d3-eaa2ed80201a",
+      "name": "Procesar dos decisiones",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "OfBrNAWIzs54aXNw",
+          "mode": "id"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ 'OR(' + $('Elegir dos productos QA').all().map(i => \"RECORD_ID()='\" + i.json.id + \"'\").join(',') + ')' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "b30eed4a-d38c-4685-b0c9-8c9f8f6e10c0",
+      "name": "Leer decisiones ya procesadas",
+      "executeOnce": true
+    },
+    {
+      "id": "60260a8c-92b0-4315-bdd6-c2b78776b055",
+      "name": "Comprobar no repetición",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "OfBrNAWIzs54aXNw",
+          "mode": "id"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "position": [
+        1320,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Probar aprobación y rechazo": {
+      "main": [
+        [
+          {
+            "node": "Leer productos QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer productos QA": {
+      "main": [
+        [
+          {
+            "node": "Elegir dos productos QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elegir dos productos QA": {
+      "main": [
+        [
+          {
+            "node": "Simular decisión en productos QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simular decisión en productos QA": {
+      "main": [
+        [
+          {
+            "node": "Procesar dos decisiones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar dos decisiones": {
+      "main": [
+        [
+          {
+            "node": "Leer decisiones ya procesadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer decisiones ya procesadas": {
+      "main": [
+        [
+          {
+            "node": "Comprobar no repetición",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  "active": false,
+  "pinData": {}
+}

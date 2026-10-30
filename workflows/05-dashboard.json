@@ -1,0 +1,168 @@
+{
+  "name": "AI Listing Builder - Dashboard KPIs",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ai-listing-builder-kpis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ca93cee9-65b9-465d-84bd-bc45ac65b720",
+      "name": "Panel web de KPIs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc3eYtmw48pImWA",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4bf44acc-2926-4d91-b7b9-0bd571c730eb",
+      "name": "Leer productos para KPIs",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app5mOoXRKRTlhO6D",
+          "mode": "list",
+          "cachedResultName": "AI Listing Builder",
+          "cachedResultUrl": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJM3sDu3PCpejgK",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "bd00532d-5f55-41e8-b847-76180b7b3103",
+      "name": "Leer publicaciones y errores",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const productos=$('Leer productos para KPIs').all().map(i=>i.json).filter(p=>p.id);const logs=$input.all().map(i=>i.json).filter(p=>p.id);\nconst counts={};for(const p of productos){const e=p.fields?.['Estado del producto']||'Sin estado';counts[e]=(counts[e]||0)+1;}\nconst errores=logs.filter(p=>p.fields?.['Registro de errores']).length;\nconst publicaciones=logs.filter(p=>p.fields?.['Descripción comercial']).length;\nconst listos=productos.filter(p=>p.fields?.['Resultado de revisión']==='Listo para publicar').length;\nconst qa=productos.filter(p=>p.fields?.SKU?.startsWith('QA-')).length;\nconst kpis={actualizado:new Date().toISOString(),productos:productos.length,productos_qa:qa,publicaciones_generadas:publicaciones,errores_registrados:errores,listos_para_publicar:listos,estados:counts};\nconst esc=s=>String(s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));\nconst cards=[['Productos',kpis.productos],['Borradores generados',publicaciones],['Errores registrados',errores],['Listos para publicar',listos]].map(([l,v])=>`<article><strong>${v}</strong><span>${l}</span></article>`).join('');\nconst bars=Object.entries(counts).map(([l,v])=>`<tr><td>${esc(l)}</td><td><div class=\"bar\" style=\"width:${Math.max(2,100*v/Math.max(productos.length,1))}%\"></div></td><td>${v}</td></tr>`).join('');\nconst html=`<!doctype html><html lang=\"es\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>AI Listing Builder | KPIs</title><style>body{margin:0;background:#f3f6fa;color:#17283b;font:16px system-ui,sans-serif}main{max-width:1000px;margin:50px auto;padding:24px}small{color:#516377}h1{font-size:36px;margin:12px 0}section{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:30px 0}article,aside{background:white;border:1px solid #dce4ed;border-radius:12px;padding:24px}strong{display:block;font-size:42px;color:#116e84}span{color:#4d6177}table{width:100%;border-collapse:collapse}td{padding:12px;border-bottom:1px solid #dce4ed}td:nth-child(2){width:48%}.bar{height:14px;background:#1687a1;border-radius:10px}p{line-height:1.6}footer{font-size:13px;margin-top:25px;color:#516377}</style><main><small>CODERHOUSE · AUTOMATIZACIÓN IA</small><h1>AI Listing Builder</h1><p>Panel de operación y revisión humana</p><section>${cards}</section><aside><h2>Estados del proceso</h2><table>${bars}</table></aside><p>Datos reales de Airtable. Incluye ${qa} productos de prueba QA. “Listo para publicar” indica una aprobación registrada; no equivale a una publicación en un marketplace.</p><footer>Actualizado: ${esc(kpis.actualizado)} · Sin nombres de productos, destinatarios, credenciales ni identificadores personales.</footer></main></html>`;\nreturn [{json:{kpis,html}}];"
+      },
+      "id": "6481b230-073f-442b-8f94-7ba77e94f81f",
+      "name": "Calcular indicadores",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "3db672e0-b993-4053-ad19-8fee2cc921b3",
+      "name": "Entregar dashboard HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Panel web de KPIs": {
+      "main": [
+        [
+          {
+            "node": "Leer productos para KPIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer productos para KPIs": {
+      "main": [
+        [
+          {
+            "node": "Leer publicaciones y errores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer publicaciones y errores": {
+      "main": [
+        [
+          {
+            "node": "Calcular indicadores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular indicadores": {
+      "main": [
+        [
+          {
+            "node": "Entregar dashboard HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
